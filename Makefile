@@ -1,11 +1,11 @@
 CC = clang
 
-build: propel.c propel.h
-	$(CC) -c propel.c
-	ar rcs libpropelc.a propel.o
+build: src/*
+	$(CC) -c src/propel.c src/propel_matr.c -I./src
+	ar rcs libpropelc.a propel.o propel_matr.o
 
 test: build
-	$(CC) test.c -lm -L. -lpropelc -o test
+	$(CC) test.c -lm -L. -lpropelc -I./src -o test
 
 run-test: test
 	./test

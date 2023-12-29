@@ -26,9 +26,6 @@ struct pc_val* pc_val_init(PC_FLOAT val)
 	if (!ret)
 		return NULL;
 
-#ifdef PC_DEBUG
-	ret->dbg_name = NULL;
-#endif
 	ret->val = val;
 	ret->op = PC_OP_NONE;
 	ret->children = NULL;
@@ -36,26 +33,18 @@ struct pc_val* pc_val_init(PC_FLOAT val)
 	return ret;
 }
 
+/* frees everything except pc_val_init values */
 void pc_valal_free(struct pc_val *x)
 {
-	if (x->op != PC_OP_NONE
-	&&  x->op != PC_OP_RELU)
-		free(x->children);
-
-	free(x);
-}
-
-void pc_valal_dbg(struct pc_val *x)
-{
-#ifdef PC_DEBUG
-	if (x->dbg_name) {
-		printf("%s(%f) = a %s b\n", x->dbg_name, x->val, pc_op_name(x->op));
+	if (x->op != PC_OP_NONE)
 		return;
+	
+	pc_valal_free(x->children[0]);
+	if (x->op & (PC_OP_SUM | PC_OP_MUL | PC_OP_POW)) {
+		pc_valal_free(x->children[1]);
+		free(x->children);
 	}
-#endif
-	printf("%f = a %s b", x->val, pc_op_name(x->op));
 }
-
 
 /*-----------------------------------------------------------------*/
 /*                           OPERATIONS                            */
@@ -67,9 +56,6 @@ struct pc_val* pc_val_sum(struct pc_val *a, struct pc_val *b)
 	if (!ret)
 		return NULL;
 
-#ifdef PC_DEBUG
-	ret->dbg_name = NULL;
-#endif
 	ret->val = a->val + b->val;
 	ret->op = PC_OP_SUM;
 	ret->children = malloc(2*sizeof(struct pc_val*));
@@ -88,9 +74,6 @@ struct pc_val* pc_val_mul(struct pc_val *a, struct pc_val *b)
 	if (!ret)
 		return NULL;
 
-#ifdef PC_DEBUG
-	ret->dbg_name = NULL;
-#endif
 	ret->val = a->val * b->val;
 	ret->op = PC_OP_MUL;
 	ret->children = malloc(2*sizeof(struct pc_val*));
@@ -109,9 +92,6 @@ struct pc_val* pc_val_pow(struct pc_val *a, struct pc_val *b)
 	if (!ret)
 		return NULL;
 
-#ifdef PC_DEBUG
-	ret->dbg_name = NULL;
-#endif
 	ret->val = PC_POW_FUNC(a->val, b->val);
 	ret->op = PC_OP_POW;
 	ret->children = malloc(2*sizeof(struct pc_val*));
@@ -129,9 +109,6 @@ struct pc_val* pc_val_relu(struct pc_val *x)
 	if (!ret)
 		return NULL;
 
-#ifdef PC_DEBUG
-	ret->dbg_name = NULL;
-#endif
 	ret->val = (x->val>0) * x->val;
 	ret->op = PC_OP_RELU;
 	ret->children = &x;
@@ -183,7 +160,7 @@ static void _backward(struct pc_val *x)
 	}
 }
 
-void pc_valal_backward(struct pc_val *x)
+void pc_val_backward(struct pc_val *x)
 {
 	x->grad = 1.0;
 	_backward(x);

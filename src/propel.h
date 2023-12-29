@@ -1,17 +1,15 @@
 #pragma once
 
-/* TODO: move to make */
-#define PC_DEBUG
 #define PC_FLOAT double
 #define PC_POW_FUNC pow
 #define PC_LOG_FUNC log
 
 enum pc_op {
-	PC_OP_SUM,
-	PC_OP_MUL,
-	PC_OP_POW,
-	PC_OP_RELU,
-	PC_OP_NONE,
+	PC_OP_SUM  = 1,
+	PC_OP_MUL  = 1 << 1,
+	PC_OP_POW  = 1 << 2,
+	PC_OP_RELU = 1 << 3,
+	PC_OP_NONE = 4 << 4,
 };
 
 struct pc_val {
@@ -20,17 +18,11 @@ struct pc_val {
 
 	enum pc_op op;
 	struct pc_val **children;
-
-	#ifdef PC_DEBUG
-	const char *dbg_name;
-	#endif
 };
 
 struct pc_val* pc_val_init(PC_FLOAT val);
 
 void pc_val_free(struct pc_val *x);
-
-void pc_val_dbg(struct pc_val *x);
 
 struct pc_val* pc_val_sum(struct pc_val *a, struct pc_val *b);
 
