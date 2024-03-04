@@ -31,7 +31,9 @@ struct pc_matr *pc_matr_mul(struct pc_matr *A, struct pc_matr *B)
 	for (int i = 0; i < A->rows; i++) {
 		for (int j = 0; j < B->cols; j++) {
 			ret->data[i][j] = pc_val_init(0);
-			/* todo */
+			for (int k = 0; k < A->cols; k++) {
+				
+			}
 		}
 	}
 }

@@ -34,14 +34,14 @@ struct pc_val* pc_val_init(PC_FLOAT val)
 }
 
 /* frees everything except pc_val_init values */
-void pc_valal_free(struct pc_val *x)
+void pc_val_free(struct pc_val *x)
 {
 	if (x->op != PC_OP_NONE)
 		return;
 	
-	pc_valal_free(x->children[0]);
+	pc_val_free(x->children[0]);
 	if (x->op & (PC_OP_SUM | PC_OP_MUL | PC_OP_POW)) {
-		pc_valal_free(x->children[1]);
+		pc_val_free(x->children[1]);
 		free(x->children);
 	}
 }
@@ -155,7 +155,9 @@ static void _backward(struct pc_val *x)
 		break;
 
         case PC_OP_RELU:
-			printf("Not implemented!\n");
+		a = x->children[0];
+		a->grad = x->grad * a->val < 0 ? 0 : a->val;
+		_backward(a);
 		break;
 	}
 }
